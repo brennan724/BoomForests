@@ -74,7 +74,8 @@ public class DataAnalyzer {
 		String test = "";
 		for (int i = 0; i < 10; ++i) {
 			for (int j = 0; j < input_columns.length; ++j) {
-				test += int_to_string.get(j).get(inputs[i][j]) + "\t";
+				test += inputs[i][j] + "\t";
+				// test += int_to_string.get(j).get(inputs[i][j]) + "\t";
 			}
 			test += output_int_to_string.get(outputs[i]);
 			test += "\n";
@@ -83,5 +84,8 @@ public class DataAnalyzer {
 
 
 		// todo: analyze it
+		float[] weights = new float[outputs.length];
+		for (float w : weights) { w = 1; }
+		C45Tree tree = new C45Tree(inputs, outputs, weights, 1, 1);
 	}
 }
