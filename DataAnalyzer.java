@@ -32,11 +32,13 @@ public class DataAnalyzer {
 			cells[i] = lines.get(i).split(",");
 		}
 
+		Hashtable<String, Integer> foo = new Hashtable<String, Integer>();
+
 		// load input data from file data
 		int[] input_columns = {3, 4, 5};
 		ArrayList<Hashtable<String, Integer>> string_to_int = new ArrayList<Hashtable<String, Integer>>();
 		ArrayList<Hashtable<Integer, String>> int_to_string = new ArrayList<Hashtable<Integer, String>>();
-		int[][] inputs = new int[cells.length][];
+		int[][] inputs = new int[cells.length-1][];
 		for (int i = 0; i < inputs.length; ++i)
 			inputs[i] = new int[input_columns.length];
 		for (int i = 0; i < input_columns.length; ++i) {
@@ -44,28 +46,41 @@ public class DataAnalyzer {
 			string_to_int.add(new Hashtable<String, Integer>());
 			int_to_string.add(new Hashtable<Integer, String>());
 			for (int j = 1; j < cells.length; ++j) {
-				if (!string_to_int.get(i).contains(cells[j][col])) {
+				if (string_to_int.get(i).get(cells[j][col]) == null) {
 					int n = string_to_int.get(i).size();
 					string_to_int.get(i).put(cells[j][col], n);
 					int_to_string.get(i).put(n, cells[j][col]);
 				}
-				inputs[j][i] = string_to_int.get(i).get(cells[j][col]);
+				inputs[j-1][i] = string_to_int.get(i).get(cells[j][col]);
 			}
 		}
 
+
 		// load output (category) data from file data
-		int output_column = 10;
+		int output_column = 13;
 		int[] outputs = new int[inputs.length];
 		Hashtable<String, Integer> output_string_to_int = new Hashtable<String, Integer>();
 		Hashtable<Integer, String> output_int_to_string = new Hashtable<Integer, String>();
-		for (int i = 0; i < outputs.length; ++i) {
-			if (!output_string_to_int.contains(cells[i][output_column])) {
+		for (int i = 1; i < outputs.length; ++i) {
+			if (output_string_to_int.get(cells[i][output_column]) == null) {
 				int n = output_string_to_int.size();
 				output_string_to_int.put(cells[i][output_column], n);
 				output_int_to_string.put(n, cells[i][output_column]);
 			}
-			outputs[i] = output_string_to_int.get(cells[i][output_column]);
+			outputs[i-1] = output_string_to_int.get(cells[i][output_column]);
 		}
+
+		// verify it worked by printing the top 10 datapoints
+		String test = "";
+		for (int i = 0; i < 10; ++i) {
+			for (int j = 0; j < input_columns.length; ++j) {
+				test += int_to_string.get(j).get(inputs[i][j]) + "\t";
+			}
+			test += output_int_to_string.get(outputs[i]);
+			test += "\n";
+		}
+		System.out.println(test);
+
 
 		// todo: analyze it
 	}
