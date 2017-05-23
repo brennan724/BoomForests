@@ -85,7 +85,9 @@ public class DataAnalyzer {
 
 		// todo: analyze it
 		float[] weights = new float[outputs.length];
-		for (float w : weights) { w = 1; }
+		for (int w = 0; w < weights.length; w++) {
+			weights[w] = 1;
+		}
 		C45Tree tree = new C45Tree(inputs, outputs, weights, 1, 1);
 	}
 }

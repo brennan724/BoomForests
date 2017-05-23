@@ -57,7 +57,7 @@ class C45Tree {
 					attributes.get(input[j][i]).put(2, (float)0);
 					attributes.get(input[j][i]).put(output[j], weights[j]);
 				}
-				System.out.println(input[j][i] + ", " + output[j] + ", " + attributes.get(input[j][i]).get(output[j]));
+				// System.out.println(input[j][i] + ", " + output[j] + ", " + attributes.get(input[j][i]).get(output[j]));
 			}
 			// now that we've gotten the counts of everything, we can calculate goodness
 			Set<Integer> branchSet = attributes.keySet();
@@ -78,13 +78,13 @@ class C45Tree {
 					total_branches += branch.get(i);
 					if (max_value == -1 || branch.get(l) > max_value) {
 						max_index = l;
-						System.out.println("l " + branch.get(l));
+						// System.out.println("l " + branch.get(l));
 						max_value = branch.get(l);
 					}
 				}
 				correct_classifications += max_value;
 			}
-			System.out.println(correct_classifications);
+			// System.out.println(correct_classifications);
 			float individual_goodness = (float) correct_classifications / total_branches / branches.length;
 			goodness[i] = individual_goodness;
 		}
