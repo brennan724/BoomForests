@@ -26,12 +26,12 @@ class C45Tree {
 		this.input = input;
 		this.output = output;
 		this.weights = weights;
-		children = new ArrayList<C45Tree>();
+		this.children = new ArrayList<C45Tree>();
 		C45Tree root = makeTree_Recursive(depth);
 	}
 	public C45Tree(int category) {
-		isLeaf = true;
-		category = category;
+		this.isLeaf = true;
+		this.category = category;
 	}
 
 	public C45Tree makeTree_Recursive(int depth) {
@@ -41,22 +41,23 @@ class C45Tree {
 		for (int i = 0; i < categoryNum; i++) {
 			// calculate the goodness, need to loop through every row
 			//create a dictonary to put everything into
-			Map<Integer, Map<Integer, Integer>> attributes = new HashMap<Integer, Map<Integer, Integer>>();
+			Map<Integer, Map<Integer, Float>> attributes = new HashMap<Integer, Map<Integer, Float>>();
 			// this iterates through the rows
 			for (int j = 0; j < input.length; j++) {
 				// increment the appropriate value
 				if (attributes.containsKey(input[j][i])) {
-					int current_count = attributes.get(input[j][i]).get(output[j]);
-					attributes.get(input[j][i]).put(output[j], ++current_count);
+					float current_count = attributes.get(input[j][i]).get(output[j]);
+					attributes.get(input[j][i]).put(output[j], current_count + weights[j]);
 				}
 				else {
-					attributes.put(input[j][i], new HashMap<Integer, Integer>());
+					attributes.put(input[j][i], new HashMap<Integer, Float>());
 					// this relies on Thomas adding tea flavors as numbers, not strings
-					attributes.get(input[j][i]).put(0, 0);
-					attributes.get(input[j][i]).put(1,0);
-					attributes.get(input[j][i]).put(2,0);
-					attributes.get(input[j][i]).put(output[j], 1);
+					attributes.get(input[j][i]).put(0, (float)0);
+					attributes.get(input[j][i]).put(1, (float)0);
+					attributes.get(input[j][i]).put(2, (float)0);
+					attributes.get(input[j][i]).put(output[j], weights[j]);
 				}
+				System.out.println(input[j][i] + ", " + output[j] + ", " + attributes.get(input[j][i]).get(output[j]));
 			}
 			// now that we've gotten the counts of everything, we can calculate goodness
 			Set<Integer> branchSet = attributes.keySet();
@@ -65,23 +66,25 @@ class C45Tree {
 			for (Integer b : branchSet) {
 				branches[counter++] = b;
 			}
-			int total_branches = 0;
-			int correct_classifications = 0;
+			float total_branches = 0;
+			float correct_classifications = 0;
 			// look at each branch, and figure out where it is supposed to be classified
 			for (int k = 0; k < branches.length; k++) {
-				Map<Integer, Integer> branch = attributes.get(branches[k]);
+				Map<Integer, Float> branch = attributes.get(branches[k]);
 				int max_index = -1;
-				int max_value = -1;
+				float max_value = -1;
 				for (int l = 0; l < 3; l++) {
 					// if there is a tie, then it will give us the first thing
 					total_branches += branch.get(i);
 					if (max_value == -1 || branch.get(l) > max_value) {
 						max_index = l;
+						System.out.println("l " + branch.get(l));
 						max_value = branch.get(l);
 					}
 				}
 				correct_classifications += max_value;
 			}
+			System.out.println(correct_classifications);
 			float individual_goodness = (float) correct_classifications / total_branches / branches.length;
 			goodness[i] = individual_goodness;
 		}
