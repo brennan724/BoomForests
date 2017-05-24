@@ -36,6 +36,7 @@ class C45Tree {
 
 	public C45Tree makeTree_Recursive(int depth) {
 		int categoryNum = input[0].length;
+		System.out.println(categoryNum);
 		float[] goodness = new float[categoryNum];
 		// iterate through each of the categories, to see which one has the best goodness
 		for (int i = 0; i < categoryNum; i++) {
@@ -75,6 +76,7 @@ class C45Tree {
 				float max_value = -1;
 				for (int l = 0; l < 3; l++) {
 					// if there is a tie, then it will give us the first thing
+					System.out.println(branch.get(i));
 					total_branches += branch.get(i);
 					if (max_value == -1 || branch.get(l) > max_value) {
 						max_index = l;
@@ -86,6 +88,7 @@ class C45Tree {
 			}
 			// System.out.println(correct_classifications);
 			float individual_goodness = (float) correct_classifications / total_branches / branches.length;
+			System.out.println(individual_goodness);
 			goodness[i] = individual_goodness;
 		}
 		// now that I have the entire list of goodnesses, we need to figure out what to divide along
@@ -98,15 +101,15 @@ class C45Tree {
 			}
 		}
 		printArray(goodness);
+		// This is the index that I'm going to want to split on
 		System.out.println(max_index + " : " + max_value);
 
 		my_attribute = max_index;
 		// create a hashmap of value to child, based on what we split on
 		// if it passes some kind of threshold, make the dummy tree
 		// else make the proper tree
+		// we'll just make it a dummy tree and assign it a category
 
-
-		// todo: make
 
 		return null;
 		// now that I know the best index to split on, I can split on it

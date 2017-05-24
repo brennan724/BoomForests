@@ -35,7 +35,7 @@ public class DataAnalyzer {
 		Hashtable<String, Integer> foo = new Hashtable<String, Integer>();
 
 		// load input data from file data
-		int[] input_columns = {3, 4, 5};
+		int[] input_columns = {3, 4, 5, 6};
 		ArrayList<Hashtable<String, Integer>> string_to_int = new ArrayList<Hashtable<String, Integer>>();
 		ArrayList<Hashtable<Integer, String>> int_to_string = new ArrayList<Hashtable<Integer, String>>();
 		int[][] inputs = new int[cells.length-1][];
