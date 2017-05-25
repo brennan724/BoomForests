@@ -35,61 +35,65 @@ class C45Tree {
 	}
 
 	public C45Tree makeTree_Recursive(int depth) {
-		int categoryNum = input[0].length;
-		System.out.println(categoryNum);
-		float[] goodness = new float[categoryNum];
+		int dimNum = input[0].length;
+		System.out.println(dimNum);
+		float[] goodness = new float[dimNum];
 		// iterate through each of the categories, to see which one has the best goodness
-		for (int i = 0; i < categoryNum; i++) {
+		for (int dim = 0; dim < dimNum; dim++) {
+			System.out.println("----------");
 			// calculate the goodness, need to loop through every row
-			//create a dictonary to put everything into
-			Map<Integer, Map<Integer, Float>> attributes = new HashMap<Integer, Map<Integer, Float>>();
+			// create a dictonary to put everything into
+			// counts[value][category] = count
+			Map<Integer, Map<Integer, Float>> counts = new HashMap<Integer, Map<Integer, Float>>();
 			// this iterates through the rows
-			for (int j = 0; j < input.length; j++) {
+			for (int i = 0; i < input.length; i++) {
 				// increment the appropriate value
-				if (attributes.containsKey(input[j][i])) {
-					float current_count = attributes.get(input[j][i]).get(output[j]);
-					attributes.get(input[j][i]).put(output[j], current_count + weights[j]);
+				if (counts.containsKey(input[i][dim])) {
+					float current_count = counts.get(input[i][dim]).get(output[i]);
+					counts.get(input[i][dim]).put(output[i], current_count + weights[i]);
 				}
 				else {
-					attributes.put(input[j][i], new HashMap<Integer, Float>());
-					// this relies on Thomas adding tea flavors as numbers, not strings
-					attributes.get(input[j][i]).put(0, (float)0);
-					attributes.get(input[j][i]).put(1, (float)0);
-					attributes.get(input[j][i]).put(2, (float)0);
-					attributes.get(input[j][i]).put(output[j], weights[j]);
+					counts.put(input[i][dim], new HashMap<Integer, Float>());
+					counts.get(input[i][dim]).put(0, (float)0);
+					counts.get(input[i][dim]).put(1, (float)0);
+					counts.get(input[i][dim]).put(2, (float)0);
+					counts.get(input[i][dim]).put(output[i], weights[i]);
 				}
-				// System.out.println(input[j][i] + ", " + output[j] + ", " + attributes.get(input[j][i]).get(output[j]));
 			}
+			for (int key : counts.keySet()) {
+				System.out.println(key + " : " + counts.get(key));
+			}
+			// // counts[value][category] = count
+			System.out.println("^^^^^^^^^^");
 			// now that we've gotten the counts of everything, we can calculate goodness
-			Set<Integer> branchSet = attributes.keySet();
-			int[] branches = new int[branchSet.size()];
+			Set<Integer> valuesSet = counts.keySet();
+			int[] values = new int[valuesSet.size()];
 			int counter = 0;
-			for (Integer b : branchSet) {
-				branches[counter++] = b;
+			for (Integer v : valuesSet) {
+				values[counter++] = v;
 			}
 			float total_branches = 0;
 			float correct_classifications = 0;
 			// look at each branch, and figure out where it is supposed to be classified
-			for (int k = 0; k < branches.length; k++) {
-				Map<Integer, Float> branch = attributes.get(branches[k]);
+			for (int val = 0; val < values.length; val++) {
+				Map<Integer, Float> category_counts = counts.get(values[val]);
 				int max_index = -1;
 				float max_value = -1;
-				for (int l = 0; l < 3; l++) {
+				for (int cat = 0; cat < 3; cat++) {
 					// if there is a tie, then it will give us the first thing
-					System.out.println(branch.get(i));
-					total_branches += branch.get(i);
-					if (max_value == -1 || branch.get(l) > max_value) {
-						max_index = l;
-						// System.out.println("l " + branch.get(l));
-						max_value = branch.get(l);
+					System.out.println(dim + ", " + val + ", " + values[val] + " : " + cat + ", " + category_counts.get(cat));
+					total_branches += category_counts.get(cat);
+					if (max_value == -1 || category_counts.get(cat) > max_value) {
+						max_index = cat;
+						max_value = category_counts.get(cat);
 					}
 				}
 				correct_classifications += max_value;
 			}
 			// System.out.println(correct_classifications);
-			float individual_goodness = (float) correct_classifications / total_branches / branches.length;
+			float individual_goodness = (float) correct_classifications / total_branches / values.length;
 			System.out.println(individual_goodness);
-			goodness[i] = individual_goodness;
+			goodness[dim] = individual_goodness;
 		}
 		// now that I have the entire list of goodnesses, we need to figure out what to divide along
 		int max_index = -1;
