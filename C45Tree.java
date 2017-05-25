@@ -40,7 +40,6 @@ class C45Tree {
 		float[] goodness = new float[dimNum];
 		// iterate through each of the categories, to see which one has the best goodness
 		for (int dim = 0; dim < dimNum; dim++) {
-			System.out.println("----------");
 			// calculate the goodness, need to loop through every row
 			// create a dictonary to put everything into
 			// counts[value][category] = count
@@ -60,11 +59,7 @@ class C45Tree {
 					counts.get(input[i][dim]).put(output[i], weights[i]);
 				}
 			}
-			for (int key : counts.keySet()) {
-				System.out.println(key + " : " + counts.get(key));
-			}
 			// // counts[value][category] = count
-			System.out.println("^^^^^^^^^^");
 			// now that we've gotten the counts of everything, we can calculate goodness
 			Set<Integer> valuesSet = counts.keySet();
 			int[] values = new int[valuesSet.size()];
@@ -81,7 +76,6 @@ class C45Tree {
 				float max_value = -1;
 				for (int cat = 0; cat < 3; cat++) {
 					// if there is a tie, then it will give us the first thing
-					System.out.println(dim + ", " + val + ", " + values[val] + " : " + cat + ", " + category_counts.get(cat));
 					total_branches += category_counts.get(cat);
 					if (max_value == -1 || category_counts.get(cat) > max_value) {
 						max_index = cat;
@@ -92,7 +86,7 @@ class C45Tree {
 			}
 			// System.out.println(correct_classifications);
 			float individual_goodness = (float) correct_classifications / total_branches / values.length;
-			System.out.println(individual_goodness);
+			System.out.println(dim + ": " + individual_goodness);
 			goodness[dim] = individual_goodness;
 		}
 		// now that I have the entire list of goodnesses, we need to figure out what to divide along
