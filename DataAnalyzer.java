@@ -91,7 +91,7 @@ public class DataAnalyzer {
 			weights[w] = 1;
 		}
 
-		Adaboost forest = new Adaboost(inputs, outputs, 2);
+		Adaboost forest = new Adaboost(inputs, outputs, 10);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);
