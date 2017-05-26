@@ -26,7 +26,7 @@ public class DataAnalyzer {
 	}
 
 	public static void main(String[] args) {
-		ArrayList<String> lines = readLinesFromFile("tea.csv");
+		ArrayList<String> lines = readLinesFromFile("test.csv");
 		String[][] cells = new String[lines.size()][];
 		for (int i = 0; i < lines.size(); ++i) {
 			cells[i] = lines.get(i).split(",");
@@ -35,7 +35,8 @@ public class DataAnalyzer {
 		Hashtable<String, Integer> foo = new Hashtable<String, Integer>();
 
 		// load input data from file data
-		int[] input_columns = {3, 4, 5, 6};
+		// int[] input_columns = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16};
+		int[] input_columns = {1, 2, 3, 4};
 		ArrayList<Hashtable<String, Integer>> string_to_int = new ArrayList<Hashtable<String, Integer>>();
 		ArrayList<Hashtable<Integer, String>> int_to_string = new ArrayList<Hashtable<Integer, String>>();
 		int[][] inputs = new int[cells.length-1][];
@@ -57,11 +58,12 @@ public class DataAnalyzer {
 
 
 		// load output (category) data from file data
-		int output_column = 13;
+		// int output_column = 13;
+		int output_column = 0;
 		int[] outputs = new int[inputs.length];
 		Hashtable<String, Integer> output_string_to_int = new Hashtable<String, Integer>();
 		Hashtable<Integer, String> output_int_to_string = new Hashtable<Integer, String>();
-		for (int i = 1; i < outputs.length; ++i) {
+		for (int i = 1; i < outputs.length+1; ++i) {
 			if (output_string_to_int.get(cells[i][output_column]) == null) {
 				int n = output_string_to_int.size();
 				output_string_to_int.put(cells[i][output_column], n);
@@ -72,7 +74,7 @@ public class DataAnalyzer {
 
 		// verify it worked by printing the top 10 datapoints
 		String test = "";
-		for (int i = 0; i < 10; ++i) {
+		for (int i = 0; i < Math.min(10, inputs.length); ++i) {
 			for (int j = 0; j < input_columns.length; ++j) {
 				test += inputs[i][j] + "\t";
 				// test += int_to_string.get(j).get(inputs[i][j]) + "\t";
@@ -80,7 +82,7 @@ public class DataAnalyzer {
 			test += output_int_to_string.get(outputs[i]);
 			test += "\n";
 		}
-		System.out.println(test);
+		// System.out.println(test);
 
 
 		// todo: analyze it
@@ -88,6 +90,23 @@ public class DataAnalyzer {
 		for (int w = 0; w < weights.length; w++) {
 			weights[w] = 1;
 		}
-		C45Tree tree = new C45Tree(inputs, outputs, weights, 1, 1);
+
+		Adaboost forest = new Adaboost(inputs, outputs, 2);
+		int score = 0;
+		for (int i = 0; i < inputs.length; ++i) {
+			int guess = forest.classify(inputs[i]);
+			if (guess == outputs[i]) ++score;
+		}
+		System.out.println(forest.toString());
+		System.out.println((float) score/inputs.length);
 	}
 }
+
+/*
+ * 1	64.3%
+ * 2	28.3%
+ * 3	24.7%
+ * 4	64.3%
+ * 5	28.3%
+ */
+

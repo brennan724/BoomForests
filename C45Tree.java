@@ -11,55 +11,42 @@ class C45Tree {
 	// 1-d array of weights for data points
 	int[][] input;
 	int[] output;
-	float[] weights;
-	float leaf_accuracy;
-	List<C45Tree> children;
+
+	double[] weights;
+	HashMap<Integer, C45Tree> children;
 	boolean isLeaf;
 	int category;
 
 	// meta-data
 	int my_attribute;
-	Map<Integer, Integer> value_to_category;
 
-	public C45Tree(int[][] input, int[] output, float[] weights, float leaf_accuracy, int depth) {
+	public C45Tree(int[][] input, int[] output, double[] weights, double leaf_accuracy, int depth) {
 		this.isLeaf = false;
-		this.input = input;
-		this.output = output;
-		this.weights = weights;
-		this.children = new ArrayList<C45Tree>();
-		C45Tree root = makeTree_Recursive(depth);
-	}
-	public C45Tree(int category) {
-		this.isLeaf = true;
-		this.category = category;
-	}
-
-	public C45Tree makeTree_Recursive(int depth) {
 		int dimNum = input[0].length;
-		System.out.println(dimNum);
-		float[] goodness = new float[dimNum];
+		double[] goodness = new double[dimNum];
+		children = new HashMap<Integer, C45Tree>();
 		// iterate through each of the categories, to see which one has the best goodness
 		for (int dim = 0; dim < dimNum; dim++) {
 			// calculate the goodness, need to loop through every row
 			// create a dictonary to put everything into
 			// counts[value][category] = count
-			Map<Integer, Map<Integer, Float>> counts = new HashMap<Integer, Map<Integer, Float>>();
+			Map<Integer, Map<Integer, Double>> counts = new HashMap<Integer, Map<Integer, Double>>();
 			// this iterates through the rows
 			for (int i = 0; i < input.length; i++) {
 				// increment the appropriate value
 				if (counts.containsKey(input[i][dim])) {
-					float current_count = counts.get(input[i][dim]).get(output[i]);
+					double current_count = counts.get(input[i][dim]).get(output[i]);
 					counts.get(input[i][dim]).put(output[i], current_count + weights[i]);
 				}
 				else {
-					counts.put(input[i][dim], new HashMap<Integer, Float>());
-					counts.get(input[i][dim]).put(0, (float)0);
-					counts.get(input[i][dim]).put(1, (float)0);
-					counts.get(input[i][dim]).put(2, (float)0);
+					counts.put(input[i][dim], new HashMap<Integer, Double>());
+					counts.get(input[i][dim]).put(0, (double)0);
+					counts.get(input[i][dim]).put(1, (double)0);
+					counts.get(input[i][dim]).put(2, (double)0);
 					counts.get(input[i][dim]).put(output[i], weights[i]);
 				}
 			}
-			// // counts[value][category] = count
+			// counts[value][category] = count
 			// now that we've gotten the counts of everything, we can calculate goodness
 			Set<Integer> valuesSet = counts.keySet();
 			int[] values = new int[valuesSet.size()];
@@ -67,13 +54,13 @@ class C45Tree {
 			for (Integer v : valuesSet) {
 				values[counter++] = v;
 			}
-			float total_branches = 0;
-			float correct_classifications = 0;
+			double total_branches = 0;
+			double correct_classifications = 0;
 			// look at each branch, and figure out where it is supposed to be classified
 			for (int val = 0; val < values.length; val++) {
-				Map<Integer, Float> category_counts = counts.get(values[val]);
+				Map<Integer, Double> category_counts = counts.get(values[val]);
 				int max_index = -1;
-				float max_value = -1;
+				double max_value = -1;
 				for (int cat = 0; cat < 3; cat++) {
 					// if there is a tie, then it will give us the first thing
 					total_branches += category_counts.get(cat);
@@ -84,41 +71,80 @@ class C45Tree {
 				}
 				correct_classifications += max_value;
 			}
-			// System.out.println(correct_classifications);
-			float individual_goodness = (float) correct_classifications / total_branches / values.length;
-			System.out.println(dim + ": " + individual_goodness);
+			double individual_goodness = (double) correct_classifications / total_branches / values.length;
 			goodness[dim] = individual_goodness;
 		}
+
 		// now that I have the entire list of goodnesses, we need to figure out what to divide along
-		int max_index = -1;
-		float max_value = -1;
+		int best_dim = -1;
+		double best_dim_value = -1;
 		for (int i = 0; i < goodness.length; i++) {
-			if (max_value == -1 || goodness[i] > max_value) {
-				max_index = i;
-				max_value = goodness[i];
+			if (best_dim_value == -1 || goodness[i] > best_dim_value) {
+				best_dim = i;
+				best_dim_value = goodness[i];
 			}
 		}
-		printArray(goodness);
 		// This is the index that I'm going to want to split on
-		System.out.println(max_index + " : " + max_value);
 
-		my_attribute = max_index;
-		// create a hashmap of value to child, based on what we split on
-		// if it passes some kind of threshold, make the dummy tree
-		// else make the proper tree
-		// we'll just make it a dummy tree and assign it a category
+		my_attribute = best_dim;
 
+		// counts[value][category] = count
+		Map<Integer, Map<Integer, Double>> counts = new HashMap<Integer, Map<Integer, Double>>();
+		for (int i = 0; i < input.length; i++) {
+			// increment the appropriate value
+			if (counts.containsKey(input[i][best_dim])) {
+				double current_count = counts.get(input[i][best_dim]).get(output[i]);
+				counts.get(input[i][best_dim]).put(output[i], current_count + weights[i]);
+			}
+			else {
+				counts.put(input[i][best_dim], new HashMap<Integer, Double>());
+				counts.get(input[i][best_dim]).put(0, (double)0);
+				counts.get(input[i][best_dim]).put(1, (double)0);
+				counts.get(input[i][best_dim]).put(2, (double)0);
+				counts.get(input[i][best_dim]).put(output[i], weights[i]);
+			}
+		}
 
-		return null;
-		// now that I know the best index to split on, I can split on it
-		// sort into categories based on the best category, and make a new tree
+		for (int val : counts.keySet()) {
+			int max_index = -1;
+			double max_value = -1;
+			for (int cat = 0; cat < 3; cat++) {
+				if (counts.get(val).get(cat) > max_value) {
+					max_index = cat;
+					max_value = counts.get(val).get(cat);
+				}
+			}
+			children.put(val, new C45Tree(max_index));
+		}
 	}
 
-	// public int classify(int[] arr) {
-	// 	return value_to_category[arr[my_attribute]];
-	// }
+	public String toString() {
+		if (this.isLeaf) return Integer.toString(this.category);
+		
+		String rtn = "{(";
+		rtn += Integer.toString(my_attribute);
+		rtn += ") ";
+		for (int val : children.keySet()) {
+			rtn += Integer.toString(val);
+			rtn += ": ";
+			rtn += children.get(val).toString();
+			rtn += "; ";
+		}
+		rtn += "}";
+		return rtn;
+	}
 
-	public void printArray(float[] arr) {
+	public C45Tree(int category) {
+		this.isLeaf = true;
+		this.category = category;
+	}
+
+	public int classify(int[] arr) {
+		if (isLeaf) return category;
+		else return children.get(arr[my_attribute]).classify(arr);
+	}
+
+	public void printArray(double[] arr) {
 		for (int a = 0; a < arr.length; a++) {
 			System.out.println(arr[a]);
 		}
