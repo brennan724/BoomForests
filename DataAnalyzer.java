@@ -26,7 +26,7 @@ public class DataAnalyzer {
 	}
 
 	public static void main(String[] args) {
-		ArrayList<String> lines = readLinesFromFile("test.csv");
+		ArrayList<String> lines = readLinesFromFile("tea.csv");
 		String[][] cells = new String[lines.size()][];
 		for (int i = 0; i < lines.size(); ++i) {
 			cells[i] = lines.get(i).split(",");
@@ -91,7 +91,7 @@ public class DataAnalyzer {
 			weights[w] = 1;
 		}
 
-		Adaboost forest = new Adaboost(inputs, outputs, 10);
+		Adaboost forest = new Adaboost(inputs, outputs, 3);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);
