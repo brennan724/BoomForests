@@ -21,6 +21,23 @@ class C45Tree {
 	int my_attribute;
 
 	public C45Tree(int[][] input, int[] output, double[] weights, double leaf_accuracy, int depth) {
+		double[] output_counts = new double[3];
+		for (int i = 0; i < output.length; i++) {
+			++output_counts[output[i]];
+		}
+		int maxIndex = 0;
+		double maxValue = 0;
+		for (int i = 0; i < output_counts.length; i++) {
+			if (output_counts[i] > max_value) {
+				maxValue = output_counts[i];
+				maxIndex = i;
+			}
+		}
+		if ((double) maxValue / output.length >= leaf_accuracy) {
+			this.isLeaf = true;
+			this.category = output[maxIndex];
+			return;
+		}
 		this.isLeaf = false;
 		int dimNum = input[0].length;
 		double[] goodness = new double[dimNum];
@@ -114,7 +131,27 @@ class C45Tree {
 					max_value = counts.get(val).get(cat);
 				}
 			}
-			children.put(val, new C45Tree(max_index));
+			if (depth == 0) {
+				children.put(val, new C45Tree(max_index));
+			}
+			else {
+				// change inputs, create the subset
+				int subset_length = 0;
+				for (int j = 0; j < inputs.length; j++) {
+					if (inputs[j][best_dim] == val) {
+						++subset_length;
+					}
+				}
+				int[][] input_subset = new int[subset_length][];
+				int k = 0;
+				for (int j = 0; j < inputs.length; j++) {
+					if (inputs[j][best_dim] == val) {
+						input_subset[k] = inputs[j];
+						++k;
+					}
+				}
+				children.put(val, new C45Tree(input_subset, output, weights, leaf_accuracy, depth - 1));
+			}
 		}
 	}
 
