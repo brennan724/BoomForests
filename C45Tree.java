@@ -28,7 +28,7 @@ class C45Tree {
 		int maxIndex = 0;
 		double maxValue = 0;
 		for (int i = 0; i < output_counts.length; i++) {
-			if (output_counts[i] > max_value) {
+			if (output_counts[i] > maxValue) {
 				maxValue = output_counts[i];
 				maxIndex = i;
 			}
@@ -137,16 +137,16 @@ class C45Tree {
 			else {
 				// change inputs, create the subset
 				int subset_length = 0;
-				for (int j = 0; j < inputs.length; j++) {
-					if (inputs[j][best_dim] == val) {
+				for (int j = 0; j < input.length; j++) {
+					if (input[j][best_dim] == val) {
 						++subset_length;
 					}
 				}
 				int[][] input_subset = new int[subset_length][];
 				int k = 0;
-				for (int j = 0; j < inputs.length; j++) {
-					if (inputs[j][best_dim] == val) {
-						input_subset[k] = inputs[j];
+				for (int j = 0; j < input.length; j++) {
+					if (input[j][best_dim] == val) {
+						input_subset[k] = input[j];
 						++k;
 					}
 				}
