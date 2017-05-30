@@ -20,6 +20,32 @@ class C45Tree {
 	// meta-data
 	int my_attribute;
 
+	private double entropy(Map<Integer, Map<Integer, Double>> counts) {
+		// counts[value][category]
+		double weight_sum = 0;
+		for (int val : counts.keySet()) {
+			for (int cat : counts.get(val).keySet())
+				weight_sum += counts.get(val).get(cat);
+		}
+
+		double rtn = 0;
+		for (int val : counts.keySet()) {
+			double val_sum = 0;
+			for (int cat : counts.get(val).keySet())
+				val_sum += counts.get(val).get(cat);
+
+			double ent = 0;
+			for (int cat : counts.get(val).keySet()) {
+				double p = counts.get(val).get(cat);
+				if (p == 0 || p == 1) ent += 0;
+				else ent += (p / val_sum) * Math.log(p / val_sum);
+			}
+			rtn += ent * val_sum / weight_sum;
+		}
+
+		return -1*rtn;
+	}
+
 	public C45Tree(int[][] input, int[] output, double[] weights, double leaf_accuracy, int depth) {
 		double[] output_counts = new double[3];
 		for (int i = 0; i < output.length; i++) {
@@ -88,8 +114,7 @@ class C45Tree {
 				}
 				correct_classifications += max_value;
 			}
-			double individual_goodness = (double) correct_classifications / total_branches / values.length;
-			goodness[dim] = individual_goodness;
+			goodness[dim] = -1*entropy(counts);
 		}
 
 		// now that I have the entire list of goodnesses, we need to figure out what to divide along

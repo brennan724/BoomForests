@@ -35,7 +35,8 @@ public class DataAnalyzer {
 		Hashtable<String, Integer> foo = new Hashtable<String, Integer>();
 
 		// load input data from file data
-		int[] input_columns = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
+		int[] input_columns = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36};
+		// int[] input_columns = {1, 15, 19, 26};
 		ArrayList<Hashtable<String, Integer>> string_to_int = new ArrayList<Hashtable<String, Integer>>();
 		ArrayList<Hashtable<Integer, String>> int_to_string = new ArrayList<Hashtable<Integer, String>>();
 		int[][] inputs = new int[cells.length-1][];
@@ -71,16 +72,18 @@ public class DataAnalyzer {
 		}
 
 		// verify it worked by printing the top 10 datapoints
-		String test = "";
-		for (int i = 0; i < Math.min(10, inputs.length); ++i) {
-			for (int j = 0; j < input_columns.length; ++j) {
-				test += inputs[i][j] + "\t";
-				// test += int_to_string.get(j).get(inputs[i][j]) + "\t";
+		boolean should_change = false;
+		if (should_change) {
+			String test = "";
+			for (int i = 0; i < Math.min(1000000, inputs.length); ++i) {
+				for (int j = 0; j < input_columns.length; ++j) {
+					test += int_to_string.get(j).get(inputs[i][j]) + "\t";
+				}
+				test += output_int_to_string.get(outputs[i]);
+				test += "\n";
 			}
-			test += output_int_to_string.get(outputs[i]);
-			test += "\n";
+			System.out.println(test);
 		}
-		// System.out.println(test);
 
 
 		// todo: analyze it
@@ -89,22 +92,20 @@ public class DataAnalyzer {
 			weights[w] = 1;
 		}
 
-		Adaboost forest = new Adaboost(inputs, outputs, 3);
+		Adaboost forest = new Adaboost(inputs, outputs, 1000);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);
+			String temp = "";
+			for (int j = 0; j < inputs[i].length; ++j)
+				temp += inputs[i][j] + ", ";
+			temp += outputs[i] + " == " + guess;
+			System.out.println(temp);
 			if (guess == outputs[i]) ++score;
 		}
+		System.out.println("\nForest:");
 		System.out.println(forest.toString());
+		System.out.println("\nAccuracy:");
 		System.out.println((float) score/inputs.length);
 	}
 }
-
-/*
- * 1	64.3%
- * 2	28.3%
- * 3	24.7%
- * 4	64.3%
- * 5	28.3%
- */
-
