@@ -71,41 +71,21 @@ public class DataAnalyzer {
 			outputs[i-1] = output_string_to_int.get(cells[i][output_column]);
 		}
 
-		// verify it worked by printing the top 10 datapoints
-		boolean should_change = false;
-		if (should_change) {
-			String test = "";
-			for (int i = 0; i < Math.min(1000000, inputs.length); ++i) {
-				for (int j = 0; j < input_columns.length; ++j) {
-					test += int_to_string.get(j).get(inputs[i][j]) + "\t";
-				}
-				test += output_int_to_string.get(outputs[i]);
-				test += "\n";
-			}
-			System.out.println(test);
-		}
 
-
-		// todo: analyze it
-		float[] weights = new float[outputs.length];
+		double[] weights = new double[outputs.length];
 		for (int w = 0; w < weights.length; w++) {
 			weights[w] = 1;
 		}
 
-		Adaboost forest = new Adaboost(inputs, outputs, 1000);
+		Adaboost forest = new Adaboost(inputs, outputs, 10);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);
-			String temp = "";
-			for (int j = 0; j < inputs[i].length; ++j)
-				temp += inputs[i][j] + ", ";
-			temp += outputs[i] + " == " + guess;
-			System.out.println(temp);
 			if (guess == outputs[i]) ++score;
 		}
 		System.out.println("\nForest:");
 		System.out.println(forest.toString());
 		System.out.println("\nAccuracy:");
-		System.out.println((float) score/inputs.length);
+		System.out.println((double) score/inputs.length);
 	}
 }

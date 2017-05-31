@@ -161,23 +161,135 @@ class C45Tree {
 			}
 			else {
 				// change inputs, create the subset
-				int subset_length = 0;
-				for (int j = 0; j < input.length; j++) {
-					if (input[j][best_dim] == val) {
-						++subset_length;
-					}
-				}
-				int[][] input_subset = new int[subset_length][];
-				int k = 0;
-				for (int j = 0; j < input.length; j++) {
-					if (input[j][best_dim] == val) {
-						input_subset[k] = input[j];
-						++k;
-					}
-				}
-				children.put(val, new C45Tree(input_subset, output, weights, leaf_accuracy, depth - 1));
+				int[][] subset = subset_input(input, best_dim, val);
+				children.put(val, new C45Tree(subset, output, weights, leaf_accuracy, depth - 1));
 			}
 		}
+	}
+
+	public int[][] subset_input(int[][] inputs, int dim, int val) {
+		int subset_length = 0;
+		for (int i = 0; i < inputs.length; i++) {
+			if (inputs[i][dim] == val) {
+				++subset_length;
+			}
+		}
+		int[][] rtn = new int[subset_length][];
+		int j = 0;
+		for (int i = 0; i < inputs.length; i++) {
+			if (inputs[i][dim] == val) {
+				rtn[j] = inputs[i];
+				++j;
+			}
+		}
+		return rtn;
+	}
+
+	public void prune(double confidence_threshold, int[][] inputs, int[] classes, double[] weights) {
+		if (isLeaf) return;
+
+		boolean all_children_leaves = true;
+		for (int val : children.keySet()) {
+			if (!children.get(val).isLeaf) {
+				all_children_leaves = false;
+				break;
+			}
+		}
+
+		// recursively prune children and (if all children are leaves) compute accuracy
+		double[] error = new double[children.size()];
+		double[] upper_bound = new double[children.size()];
+		double[] weight_sum = new double[children.size()];
+		double z = qnorm(confidence_threshold);
+		int index = 0;
+		for (int val : children.keySet()) {
+			int subset_length = 0;
+			for (int i = 0; i < inputs.length; i++) {
+				if (inputs[i][this.my_attribute] == val) {
+					++subset_length;
+				}
+			}
+			int[][] sub_inputs = new int[subset_length][];
+			int[] sub_classes = new int[subset_length];
+			double[] sub_weights = new double[subset_length];
+			int j = 0;
+			for (int i = 0; i < inputs.length; i++) {
+				if (inputs[i][this.my_attribute] == val) {
+					sub_inputs[j] = inputs[i];
+					sub_classes[j] = classes[i];
+					sub_weights[j] = weights[i];
+					weight_sum[index] += weights[i];
+					++j;
+				}
+			}
+			children.get(val).prune(confidence_threshold, sub_inputs, sub_classes, sub_weights);
+
+			if (all_children_leaves) {
+				error[index] = 1.0 - children.get(val).compute_accuracy(sub_inputs, sub_classes, sub_weights);
+				upper_bound[index] = error[index] + z * Math.sqrt(error[index] * (1 - error[index]) / weight_sum[index]);
+			}
+			++index;
+		}
+
+
+		if (all_children_leaves) {
+			// if I only have leaves for children, then try to prune self
+			double[] counter = new double[3];
+			for (int i = 0; i < classes.length; ++i)
+				counter[classes[i]] += weights[i];
+
+			double sum = 0;
+			int max_class = -1;
+			double maximum = -1;
+			for (int i = 0; i < counter.length; ++i) {
+				if (counter[i] > maximum) {
+					max_class = i;
+					maximum = counter[i];
+				}
+				sum += counter[i];
+			}
+			double error_sum = 1.0 - maximum / sum;
+
+			double upper_bound_sum = 0;
+			double weight_total = 0;
+			for (int i = 0; i < error.length; ++i) {
+				upper_bound_sum += weight_sum[i] * upper_bound[i];
+				weight_total += weight_sum[i];
+			}
+			if (upper_bound_sum / weight_total >= error_sum) {
+				// decrease in accuracy isn't statistically significant
+				// I should purne myself
+				this.children = null;
+				this.isLeaf = true;
+				this.category = max_class;
+			}
+		}
+	}
+
+	public double compute_accuracy(int[][] inputs, int[] classes, double[] weights) {
+		double correct = 0.0;
+		double weight_sum = 0.0;
+		for (int i = 0; i < inputs.length; ++i) {
+			int guess = classify(inputs[i]);
+			if (guess == classes[i]) correct += weights[i];
+			weight_sum += weights[i];
+		}
+		return correct / weight_sum;
+	}
+
+	// computed via R
+	private static double[] qnorm_table = {-2.326348, -2.053749, -1.880794, -1.750686, -1.644854, -1.554774, -1.475791, -1.405072, -1.340755, -1.281552, -1.226528, -1.174987, -1.126391, -1.080319, -1.036433, -0.9944579, -0.9541653, -0.9153651, -0.8778963, -0.8416212, -0.8064212, -0.7721932, -0.7388468, -0.7063026, -0.6744898, -0.6433454, -0.612813, -0.5828415, -0.5533847, -0.5244005, -0.4958503, -0.4676988, -0.4399132, -0.4124631, -0.3853205, -0.3584588, -0.3318533, -0.3054808, -0.279319, -0.2533471, -0.227545, -0.2018935, -0.1763742, -0.1509692, -0.1256613, -0.1004337, -0.07526986, -0.05015358, -0.02506891, 0, 0.02506891, 0.05015358, 0.07526986, 0.1004337, 0.1256613, 0.1509692, 0.1763742, 0.2018935, 0.227545, 0.2533471, 0.279319, 0.3054808, 0.3318533, 0.3584588, 0.3853205, 0.4124631, 0.4399132, 0.4676988, 0.4958503, 0.5244005, 0.5533847, 0.5828415, 0.612813, 0.6433454, 0.6744898, 0.7063026, 0.7388468, 0.7721932, 0.8064212, 0.8416212, 0.8778963, 0.9153651, 0.9541653, 0.9944579, 1.036433, 1.080319, 1.126391, 1.174987, 1.226528, 1.281552, 1.340755, 1.405072, 1.475791, 1.554774, 1.644854, 1.750686, 1.880794, 2.053749, 2.326348};
+
+	/*
+	 * @param p - probability between 0.01 and 0.99
+	 * @return - the z-score associated with the given probability
+	 */
+	private static double qnorm(double p) {
+		if (p < 0.01) return Double.NEGATIVE_INFINITY;
+		else if (p > 0.99) return Double.POSITIVE_INFINITY;
+		int index = (int) (100.0 * p);
+		double t = 100.0 * p - index;
+		return (1-t) * qnorm_table[index-1] + t * qnorm_table[index];
 	}
 
 	public String toString() {
@@ -202,8 +314,8 @@ class C45Tree {
 	}
 
 	public int classify(int[] arr) {
-		if (isLeaf) return category;
-		else return children.get(arr[my_attribute]).classify(arr);
+		if (this.isLeaf) return this.category;
+		else return this.children.get(arr[this.my_attribute]).classify(arr);
 	}
 
 	public void printArray(double[] arr) {

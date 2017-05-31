@@ -22,6 +22,7 @@ public class Adaboost {
 		for (int index = 0; index < num_learners; ++index) {
 			// train weak learner
 			C45Tree new_learner = new C45Tree(inputs, classes, weights, 1.0, 0);
+			new_learner.prune(0.75, inputs, classes, weights);
 
 			// compute error
 			double error = 0;
