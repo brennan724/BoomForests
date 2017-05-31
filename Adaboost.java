@@ -7,7 +7,7 @@ public class Adaboost {
 	private double[] learner_weights;
 
 	// http://ww.web.stanford.edu/~hastie/Papers/SII-2-3-A8-Zhu.pdf
-	public Adaboost(int[][] inputs, int[] classes, int num_learners) {
+	public Adaboost(int[][] inputs, int[] classes, int num_learners, double leaf_accuracy, double confidence_threshold) {
 		int max_class = -1;
 		for (int i = 0; i < classes.length; ++i) {
 			if (classes[i] > max_class) max_class = classes[i];
@@ -21,8 +21,8 @@ public class Adaboost {
 		learner_weights = new double[num_learners];
 		for (int index = 0; index < num_learners; ++index) {
 			// train weak learner
-			C45Tree new_learner = new C45Tree(inputs, classes, weights, 1.0, 0);
-			new_learner.prune(0.75, inputs, classes, weights);
+			C45Tree new_learner = new C45Tree(inputs, classes, weights, leaf_accuracy, 0);
+			new_learner.prune(confidence_threshold, inputs, classes, weights);
 
 			// compute error
 			double error = 0;

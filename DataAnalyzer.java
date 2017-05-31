@@ -25,8 +25,23 @@ public class DataAnalyzer {
 		return rtn;
 	}
 
+	/**
+	 * Takes three command line arguments:
+	 * fileName the file of data
+	 * numTrees number of trees to use for each iteration of Adaboost
+	 * leaf_accuracy leaf accuracy for C4.5
+	 * confidence_threshold the confidence threshold for pruning
+	 */
 	public static void main(String[] args) {
-		ArrayList<String> lines = readLinesFromFile("tea.csv");
+		String fileName = args[0];
+		System.out.println(fileName);
+		int numTrees = Integer.parseInt(args[1]);
+		System.out.println(numTrees);
+		double leaf_accuracy = Double.parseDouble(args[2]);
+		System.out.println(leaf_accuracy);
+		double confidence_threshold = Double.parseDouble(args[3]);
+		System.out.println(confidence_threshold);
+		ArrayList<String> lines = readLinesFromFile(fileName);
 		String[][] cells = new String[lines.size()][];
 		for (int i = 0; i < lines.size(); ++i) {
 			cells[i] = lines.get(i).split(",");
@@ -77,7 +92,7 @@ public class DataAnalyzer {
 			weights[w] = 1;
 		}
 
-		Adaboost forest = new Adaboost(inputs, outputs, 10);
+		Adaboost forest = new Adaboost(inputs, outputs, numTrees, leaf_accuracy, confidence_threshold);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);
