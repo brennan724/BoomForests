@@ -1,4 +1,3 @@
-
 Use the makefile to (um) make the program DataAnalyzer. DataAnalyzer uses AdaBoost to construct a "forest" of C4.5 trees to attempt to guess what kind of tea people prefer given other known properties.
 
 Running the program looks like
