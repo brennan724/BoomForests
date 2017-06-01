@@ -20,6 +20,11 @@ class C45Tree {
 	// meta-data
 	int my_attribute;
 
+	/**
+	 * computes the entropy remaining in one variable conditioned on another
+	 * the parameter "counts" takes teh form
+	 * counts[variable_conditioned_on][variable_whose_entropy_we_are_looking at]
+	 */
 	private double entropy(Map<Integer, Map<Integer, Double>> counts) {
 		// counts[value][category]
 		double weight_sum = 0;
@@ -46,6 +51,13 @@ class C45Tree {
 		return -1*rtn;
 	}
 
+	/**
+	 * @param inputs 2d array of observation's values so that inputs[X][Y] refers to dimension Y of person X
+	 * @param output array of classes (categories) so that inputs[X] refers to person X
+	 * @param weights array of weight to give to each observation
+	 * @param leaf_accuracy the accuracy limit that, if a C4.5 tree get's above it, it stops recursively creating itself
+	 * @param depth the depth left before max_depth is reached
+	 */
 	public C45Tree(int[][] input, int[] output, double[] weights, double leaf_accuracy, int depth) {
 		double[] output_counts = new double[3];
 		for (int i = 0; i < output.length; i++) {
@@ -167,6 +179,10 @@ class C45Tree {
 		}
 	}
 
+	/**
+	 * takes the given "input" array and returns a new 2d-array
+	 * where each row's column "dim" has value "val"
+	 */
 	public int[][] subset_input(int[][] inputs, int dim, int val) {
 		int subset_length = 0;
 		for (int i = 0; i < inputs.length; i++) {
@@ -185,6 +201,9 @@ class C45Tree {
 		return rtn;
 	}
 
+	/**
+	 * recurseively prunes using confidence_threshold as a p-value
+	 */
 	public void prune(double confidence_threshold, int[][] inputs, int[] classes, double[] weights) {
 		if (isLeaf) return;
 
@@ -266,6 +285,9 @@ class C45Tree {
 		}
 	}
 
+	/*
+	 * computes the accuracy of a node in a C4.5 Tree
+	 */
 	public double compute_accuracy(int[][] inputs, int[] classes, double[] weights) {
 		double correct = 0.0;
 		double weight_sum = 0.0;
@@ -308,6 +330,9 @@ class C45Tree {
 		return rtn;
 	}
 
+	/*
+	 constructor for the leaf node of a C4.5 tree
+	 */
 	public C45Tree(int category) {
 		this.isLeaf = true;
 		this.category = category;

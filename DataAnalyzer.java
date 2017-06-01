@@ -6,6 +6,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class DataAnalyzer {
+	/*
+	 * Read the given file and print out the lines as an ArrayList.
+	 */
 	private static ArrayList<String> readLinesFromFile(String path) {
 		ArrayList<String> rtn = null;
 		try {
@@ -26,13 +29,15 @@ public class DataAnalyzer {
 	}
 
 	/**
-	 * Takes three command line arguments:
-	 * fileName the file of data
-	 * numTrees number of trees to use for each iteration of Adaboost
-	 * leaf_accuracy leaf accuracy for C4.5
-	 * confidence_threshold the confidence threshold for pruning
+	 * Takes five command line arguments:
+	 * @param fileName the file of data
+	 * @param numTrees number of trees to use for each iteration of Adaboost
+	 * @param leaf_accuracy leaf accuracy for C4.5
+	 * @param confidence_threshold the confidence threshold for pruning
+	 * @param max_depth the maximum depth for the C4.5 trees to obtain
 	 */
 	public static void main(String[] args) {
+		// parse user input
 		String fileName = args[0];
 		System.out.println(fileName);
 		int numTrees = Integer.parseInt(args[1]);
@@ -41,17 +46,24 @@ public class DataAnalyzer {
 		System.out.println(leaf_accuracy);
 		double confidence_threshold = Double.parseDouble(args[3]);
 		System.out.println(confidence_threshold);
+		int max_depth = Integer.parseInt(args[4]) - 1;
+		System.out.println(max_depth + 1);
+		if (max_depth < 0) {
+			System.out.println("max_depth must be a positive integer");
+			return;
+		}
+
+
+		// read file
 		ArrayList<String> lines = readLinesFromFile(fileName);
 		String[][] cells = new String[lines.size()][];
 		for (int i = 0; i < lines.size(); ++i) {
 			cells[i] = lines.get(i).split(",");
 		}
 
-		Hashtable<String, Integer> foo = new Hashtable<String, Integer>();
 
-		// load input data from file data
+		// load these columns from the csv fil
 		int[] input_columns = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36};
-		// int[] input_columns = {1, 15, 19, 26};
 		ArrayList<Hashtable<String, Integer>> string_to_int = new ArrayList<Hashtable<String, Integer>>();
 		ArrayList<Hashtable<Integer, String>> int_to_string = new ArrayList<Hashtable<Integer, String>>();
 		int[][] inputs = new int[cells.length-1][];
@@ -87,12 +99,8 @@ public class DataAnalyzer {
 		}
 
 
-		double[] weights = new double[outputs.length];
-		for (int w = 0; w < weights.length; w++) {
-			weights[w] = 1;
-		}
-
-		Adaboost forest = new Adaboost(inputs, outputs, numTrees, leaf_accuracy, confidence_threshold);
+		// run AdaBoost
+		Adaboost forest = new Adaboost(inputs, outputs, numTrees, leaf_accuracy, confidence_threshold, max_depth);
 		int score = 0;
 		for (int i = 0; i < inputs.length; ++i) {
 			int guess = forest.classify(inputs[i]);

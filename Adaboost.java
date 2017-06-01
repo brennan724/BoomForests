@@ -6,8 +6,19 @@ public class Adaboost {
 	private ArrayList<C45Tree> learners;
 	private double[] learner_weights;
 
-	// http://ww.web.stanford.edu/~hastie/Papers/SII-2-3-A8-Zhu.pdf
-	public Adaboost(int[][] inputs, int[] classes, int num_learners, double leaf_accuracy, double confidence_threshold) {
+	// Zhu, J., Zou, H., Rosset, S., & Hastie, T. (2009). Multi-class adaboost. Statistics and its Interface, 2(3), 349-360.
+
+	// Alvarez, S. (n.d.). Decision Tree Pruning based on Confidence Intervals (as in C4.5). Retrieved May 31, 2017, from http://www.cs.bc.edu/~alvarez/ML/statPruning.html
+
+	/**
+	 * @param inputs 2d array of observation's values so that inputs[X][Y] refers to dimension Y of person X
+	 * @param classes array of classes (categories) so that inputs[X] refers to person X
+	 * @param num_learners number of weak learners (C4.5 trees)
+	 * @param leaf_accuracy the accuracy limit that, if a C4.5 tree get's above it, it stops recursively creating itself
+	 * @param confidence_threshold the p-value used for pruning
+	 * @param max_depth the maximum depth for the C4.5 trees
+	 */
+	public Adaboost(int[][] inputs, int[] classes, int num_learners, double leaf_accuracy, double confidence_threshold, int max_depth) {
 		int max_class = -1;
 		for (int i = 0; i < classes.length; ++i) {
 			if (classes[i] > max_class) max_class = classes[i];
@@ -21,7 +32,7 @@ public class Adaboost {
 		learner_weights = new double[num_learners];
 		for (int index = 0; index < num_learners; ++index) {
 			// train weak learner
-			C45Tree new_learner = new C45Tree(inputs, classes, weights, leaf_accuracy, 0);
+			C45Tree new_learner = new C45Tree(inputs, classes, weights, leaf_accuracy, max_depth);
 			new_learner.prune(confidence_threshold, inputs, classes, weights);
 
 			// compute error
@@ -71,6 +82,9 @@ public class Adaboost {
 		return rtn;
 	}
 
+	/*
+	 * when given an observation (array of values), this classifies it according to AdaBoost
+	 */
 	public int classify(int[] input) {
 		double sum = 0;
 		double[] guesses = new double[num_classes];
